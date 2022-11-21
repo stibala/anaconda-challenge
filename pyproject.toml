@@ -1,0 +1,24 @@
+[tool.poetry]
+name = "pythonproject1"
+version = "0.1.0"
+description = ""
+authors = ["Adam Stibal <adam.stibal@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+uvicorn = "^0.20.0"
+fastapi = "^0.87.0"
+sqlalchemy = "^1.4.44"
+fastapi-utils = "^0.2.1"
+python-dotenv = "^0.21.0"
+python-jose = "^3.3.0"
+cryptography = "^38.0.3"
+passlib = "^1.7.4"
+python-multipart = "^0.0.5"
+bcrypt = "^4.0.1"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

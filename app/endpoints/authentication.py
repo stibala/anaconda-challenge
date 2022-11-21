@@ -1,12 +1,15 @@
 from datetime import timedelta
+from typing import Union
 
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.security import OAuth2PasswordRequestForm
 from fastapi_utils.cbv import cbv
 from starlette import status
 
+from app.api_models.user import UserOut
+from app.repositories.user import UserRepository, get_user_repository
 from app.settings import Settings
-from app.utils import authenticate_user, fake_users_db, create_access_token, User, get_current_active_user, Token
+from app.utils import create_access_token, Token, verify_password
 
 settings = Settings()
 
@@ -19,10 +22,12 @@ router = APIRouter(
 class Authentication:
     """Router for authentication"""
 
+    repository: UserRepository = Depends(get_user_repository)
+
     @router.post("/token", response_model=Token)
     async def login_for_access_token(self, form_data: OAuth2PasswordRequestForm = Depends()):
         """see documentation https://fastapi.tiangolo.com/tutorial/security/oauth2-jwt/"""
-        user = authenticate_user(fake_users_db, form_data.username, form_data.password)
+        user = self.authenticate_user(form_data.username, form_data.password)
         if not user:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
@@ -35,10 +40,10 @@ class Authentication:
         )
         return {"access_token": access_token, "token_type": "bearer"}
 
-    @router.get("/users/me/", response_model=User)
-    async def read_users_me(self, current_user: User = Depends(get_current_active_user)):
-        return current_user
-
-    @router.get("/users/me/items/")
-    async def read_own_items(self, current_user: User = Depends(get_current_active_user)):
-        return [{"item_id": "Foo", "owner": current_user.username}]
+    def authenticate_user(self, username: str, password: str) -> Union[bool, UserOut]:
+        user = self.repository.get_by_name(username)
+        if not user:
+            return False
+        if not verify_password(password, user.hashed_password):
+            return False
+        return user
