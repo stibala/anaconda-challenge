@@ -39,5 +39,5 @@ class Game:
         path="/game/{game_id}",
         response_model=GameOut
     )
-    def get_turn(self, game_id: int) -> GameOut:
+    def get_game(self, game_id: int) -> GameOut:
         return self.repository.get(game_id)
